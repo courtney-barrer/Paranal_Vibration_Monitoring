@@ -4,6 +4,14 @@
 Created on Fri May 12 13:49:26 2023
 
 @author: bcourtne
+
+changes (aim to move away from online tool to offline. i.e. no automatic state detection )
+============
+4-12-25 : remove dlt import, to remove dependence, in get_state() need to just make dummy state
+we can assume guiding, enc open - change so user can input focus! 
+
+
+
 """
 import numpy as np
 import h5py
@@ -15,7 +23,11 @@ import datetime
 import scipy.signal as sig
 import pandas as pd 
 
-import dlt # needs to be in virtual environment for import to work (source venv/bin/activate)
+try:
+    import dlt # needs to be in virtual environment for import to work (source venv/bin/activate)
+except:
+    print("cannot import dlt, this is ok! We are probably just not in ESO/datalab virtual environment so use this as an offline tool!")
+
 
 #mapping from sensor indices to mirror position 
 i2m_dict = {1:'M3a',2:'M3b',3:'M2',4:'empty',5:'M1+y',6:'M1-x',7:'M1-y',8:'M1+x',9:'M4',10:'M5',11:'M6',12:'M7'} 

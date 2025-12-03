@@ -5,17 +5,15 @@ Created on Thu May 11 12:11:26 2023
 
 @author: bcourtne
 
+For ESO/online tool version: 
 run in virtual environment 
 source venv/bin/activate
 see https://gitlab.eso.org/datalab/dlab_python_libraries/dlt/-/wikis/Jupyter-Playground-on-your-Laptop 
 
-To do 
-
-Get rid of latest_data returned in prepare_current_status function (need to make ts plotting use current_acc_dict and NOT latest data! 
 
 """
 import streamlit as st
-import mpld3
+#import mpld3
 import streamlit.components.v1 as components
 import numpy as np
 import os
@@ -32,11 +30,14 @@ import pickle
 import plotly.express as px
 
 # for datalab functionality 
-import dlt # this will only work if we are in virtual environment (run in cmd line >>cd /Users/bcourtne/Documents/mac1_bk/jupyter_playground. Then >> source venv/bin/activate.
+try:
+    import dlt # this will only work if we are in datalab virtual environment 
+except:
+    print("cannot import dlt, probably not in correct virtual environment so use this as an offline tool!")
 # see https://gitlab.eso.org/datalab/dlab_python_libraries/dlt/-/wikis/Jupyter-Playground-on-your-Laptop 
 
 # then our own functions 
-os.chdir('/home/bcourtne/mn2_dashboard/jupyter_playground')
+#os.chdir('/home/bcourtne/mn2_dashboard/jupyter_playground')
 import mn2_dashboard_functions as mn2
 
 #mapping from sensor indices to mirror position 
@@ -57,6 +58,7 @@ def prepare_current_status(now, post_upgrade):
     latest_files = {} # for each UT
     acc_dict = {} # to hold processed most recent samples for each UT
 
+    ### 4-12-25 edit : this is for online checking of latest file 
     for ut in [1,2,3,4]:
         percent_complete += 25
         my_bar.progress(percent_complete, text=progress_text)
@@ -397,7 +399,7 @@ vib_det_thresh_factor = 3 # how many times above the rolling median does a psd b
 #++++++++++++++++++++++++++++++++ Download and/or Read in the latest data and prepare it (taken from daily file)
 
 # process the input files with core results stored in current_acc_dict
-latest_files,latest_data, current_acc_dict, tel_state_dict,current_psd_dict, current_ref_psds, current_time_key = prepare_current_status(now, post_upgrade) 
+latest_files, latest_data, current_acc_dict, tel_state_dict, current_psd_dict, current_ref_psds, current_time_key = prepare_current_status(now, post_upgrade) 
 #latest_files, latest_data,  current_acc_dict, tel_state_dict,current_psd_dict, current_ref_psds
 tel_state_df = pd.DataFrame(tel_state_dict)
 tel_state_df.columns = ['UT1','UT2','UT3','UT4']
