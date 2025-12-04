@@ -14,7 +14,7 @@ we can assume guiding, enc open - change so user can input focus!
 
 """
 import numpy as np
-import h5py
+#import h5py
 import os
 import matplotlib.pyplot as plt 
 import scipy.signal as sig
