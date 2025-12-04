@@ -17,6 +17,10 @@ The dashboard provides a compact interface for analysing vibration behaviour rec
 git clone https://github.com/courtney-barrer/Paranal_Vibration_Monitoring
 cd Paranal_Vibration_Monitoring
 
+# 1b) if you want (optional) set up virtual environment to install in 
+python -m venv .venv              
+source .venv/bin/activate
+
 # 2a) Recommended: install via pyproject
 pip install .
 
