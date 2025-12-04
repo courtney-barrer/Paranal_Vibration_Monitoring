@@ -33,14 +33,14 @@ streamlit run mn2_streamlit_dashboad.py
 
 ## How to use
 
-1. Enter the full path to an MNII daily HDF5 file in the sidebar. These files can be several hundred megabytes and cannot be uploaded through the browser.
+1. Enter the full path to an MNII daily HDF5 file in the sidebar for each telescope (or the one you're interested in). These files can be several hundred megabytes and cannot be uploaded through the browser.
 2. After loading, the dashboard scans the file for time keys in the format `HH:MM:SS`. A slider will appear to select the 10-second sample to inspect.
 3. Select the telescope configuration:
    - Focus (Coudé, Nasmyth A, Nasmyth B, Cassegrain)
    - Enclosure state (open or closed)
    - Guiding state (on or off)
 
-   These choices determine the state dictionary used to fetch the correct reference PSDs.
+   These choices determine the state dictionary used to fetch the correct reference PSDs. Also plotting options (like showing reference vibration levels, peak detections etc) can be changed in the sidebar.
 
 4. Once the time and state are selected, the dashboard computes and displays:
    - Raw accelerometer time series
