@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paranal-vibration-monitoring"
+version = "0.1.2"
+description = "Streamlit dashboard for MNII vibration monitoring (offline)."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "streamlit>=1.22,<2",
+  "numpy>=1.24,<3",
+  "pandas>=1.5,<3",
+  "matplotlib>=3.7,<4",
+  "scipy>=1.10,<2",
+  "h5py>=3.8,<4",
+  "Pillow>=9.5,<11",
+  "plotly>=5.14,<6"
+]
+
+[tool.setuptools]
+# Do NOT auto-discover packages (avoids picking up test_data/, reference_psds/)
+packages = []
+# Install these single-file modules so they can be imported if needed
+py-modules = ["mn2_dashboard_functions", "mn2_streamlit_dashboad"]
+include-package-data = false
