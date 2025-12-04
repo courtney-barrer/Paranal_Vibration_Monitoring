@@ -19,6 +19,7 @@ import numpy as np
 import os
 import subprocess
 import pandas as pd
+from pathlib import Path
 import glob
 from PIL import Image
 import datetime 
@@ -40,6 +41,52 @@ except:
 #os.chdir('/home/bcourtne/mn2_dashboard/jupyter_playground')
 import mn2_dashboard_functions as mn2
 
+
+##### STATIC GLOBAL VARIABLES 
+# --- STATIC TELESCOPE STATE (OFFLINE MODE) ---
+# Matches the structure returned by get_state:
+# keys: 'open_enclosure', 'guiding', 'Coude', 'Nasmyth A', 'Nasmyth B', 'Cassegrain'
+
+
+# Folder where THIS script lives
+PROJECT_DIR = Path(__file__).resolve().parent
+
+STATIC_TEL_STATE = {
+    1: {
+        "open_enclosure": False,
+        "guiding": False,
+        "Coude": False,
+        "Nasmyth A": False,
+        "Nasmyth B": False,
+        "Cassegrain": True,
+    },
+    2: {
+        "open_enclosure": False,
+        "guiding": False,
+        "Coude": False,
+        "Nasmyth A": False,
+        "Nasmyth B": False,
+        "Cassegrain": True,
+    },
+    3: {
+        "open_enclosure": False,
+        "guiding": False,
+        "Coude": False,
+        "Nasmyth A": False,
+        "Nasmyth B": False,
+        "Cassegrain": True,
+    },
+    4: {
+        "open_enclosure": False,
+        "guiding": False,
+        "Coude": False,
+        "Nasmyth A": False,
+        "Nasmyth B": False,
+        "Cassegrain": True,
+    },
+}
+
+
 #mapping from sensor indices to mirror position 
 st.set_page_config(layout="wide")
 
@@ -58,81 +105,104 @@ def prepare_current_status(now, post_upgrade):
     latest_files = {} # for each UT
     acc_dict = {} # to hold processed most recent samples for each UT
 
-    ### 4-12-25 edit : this is for online checking of latest file 
+    # ### 4-12-25 edit : we get rid of this is since its for online checking of latest file 
+    # ## we just use a static file 
     for ut in [1,2,3,4]:
-        percent_complete += 25
-        my_bar.progress(percent_complete, text=progress_text)
+    #     percent_complete += 25
+    #     my_bar.progress(percent_complete, text=progress_text)
 
-        print( f'downloading\n {datalab_reports_url}/raw/{year}/{month}/ldlvib{ut}_raw_{now.strftime("%Y-%m-%d")}.hdf5')
-        print( ' to : ',f'{local_data_path}/raw/{year}/{month}/')
-        #try: # we should really have a seperate cron job that does this to keep an updated local file and then access this istead of downloading it everytime here 
-        tmp_put_path = f'{local_data_path}/raw/{year}/{month}/'
-        tmp_get_path = f'{datalab_reports_url}/raw/{year}/{month}/'
-        tmp_filename = f'ldlvib{ut}_raw_{now.strftime("%Y-%m-%d")}.hdf5'
+    #     print( f'downloading\n {datalab_reports_url}/raw/{year}/{month}/ldlvib{ut}_raw_{now.strftime("%Y-%m-%d")}.hdf5')
+    #     print( ' to : ',f'{local_data_path}/raw/{year}/{month}/')
+    #     #try: # we should really have a seperate cron job that does this to keep an updated local file and then access this istead of downloading it everytime here 
+    #     tmp_put_path = f'{local_data_path}/raw/{year}/{month}/'
+    #     tmp_get_path = f'{datalab_reports_url}/raw/{year}/{month}/'
+    #     tmp_filename = f'ldlvib{ut}_raw_{now.strftime("%Y-%m-%d")}.hdf5'
         
-        tmp_files_in_put_path = glob.glob(f'{local_data_path}/raw/{year}/{month}/ldlvib{ut}_raw_*.hdf5')
-        time_ref_filename=f'{tmp_put_path}/tmp_file_time_ref.txt' # this will be used as time reference for the file creation date in current OS (see os.path.getctime))
+    #     tmp_files_in_put_path = glob.glob(f'{local_data_path}/raw/{year}/{month}/ldlvib{ut}_raw_*.hdf5')
+    #     time_ref_filename=f'{tmp_put_path}/tmp_file_time_ref.txt' # this will be used as time reference for the file creation date in current OS (see os.path.getctime))
         
-        if not os.path.exists(tmp_put_path):
-            print('\n\n\n not os.path.exists(tmp_put_path) \n\n\n')
-            os.makedirs(tmp_put_path)                     
+    #     if not os.path.exists(tmp_put_path):
+    #         print('\n\n\n not os.path.exists(tmp_put_path) \n\n\n')
+    #         os.makedirs(tmp_put_path)                     
             
-            # download the data (obviously we don't have it if we had to make a new folder )
-            subprocess.check_call(['./get_latest_data.sh', tmp_get_path + tmp_filename, tmp_put_path])           
-            #subprocess.check_call(['./get_latest_data.sh',f'{datalab_reports_url}/raw/{year}/{month}/ldlvib{ut}_raw_{now.strftime("%Y-%m-%d")}.hdf5', f'{local_data_path}/raw/{year}/{month}/'])           
-            print (['./get_latest_data.sh', tmp_get_path+tmp_filename, tmp_put_path])
+    #         # download the data (obviously we don't have it if we had to make a new folder )
+    #         subprocess.check_call(['./get_latest_data.sh', tmp_get_path + tmp_filename, tmp_put_path])           
+    #         #subprocess.check_call(['./get_latest_data.sh',f'{datalab_reports_url}/raw/{year}/{month}/ldlvib{ut}_raw_{now.strftime("%Y-%m-%d")}.hdf5', f'{local_data_path}/raw/{year}/{month}/'])           
+    #         print (['./get_latest_data.sh', tmp_get_path+tmp_filename, tmp_put_path])
 
-        elif os.path.exists(tmp_put_path):
+    #     elif os.path.exists(tmp_put_path):
             
-            print('\n\n\n os.path.exists(tmp_put_path)\n\n\n')
+    #         print('\n\n\n os.path.exists(tmp_put_path)\n\n\n')
             
-            if len(tmp_files_in_put_path)>0: # if we actually have files in directory
+    #         if len(tmp_files_in_put_path)>0: # if we actually have files in directory
                 
-                print('\n\n\n len(tmp_files_in_put_path)>0\n\n\n')
+    #             print('\n\n\n len(tmp_files_in_put_path)>0\n\n\n')
             
-                if tmp_put_path + tmp_filename not in glob.glob(tmp_put_path + '*'): # if the target file not in folder then we download
-                    # if not in the local data folder then download it
-                    print('\n\n\n tmp_put_path + tmp_filename not in glob.glob(tmp_put_path + *) \n\n\n')
+    #             if tmp_put_path + tmp_filename not in glob.glob(tmp_put_path + '*'): # if the target file not in folder then we download
+    #                 # if not in the local data folder then download it
+    #                 print('\n\n\n tmp_put_path + tmp_filename not in glob.glob(tmp_put_path + *) \n\n\n')
                     
-                    subprocess.check_call(['./get_latest_data.sh', tmp_get_path+tmp_filename, tmp_put_path])  
-                    print (['./get_latest_data.sh', tmp_get_path + tmp_filename, tmp_put_path])    
-                else: # we have the target file.. now we just have to check how old it is (they are daily files that get updated every ~15 minutes !)
+    #                 subprocess.check_call(['./get_latest_data.sh', tmp_get_path+tmp_filename, tmp_put_path])  
+    #                 print (['./get_latest_data.sh', tmp_get_path + tmp_filename, tmp_put_path])    
+    #             else: # we have the target file.. now we just have to check how old it is (they are daily files that get updated every ~15 minutes !)
                     
-                    print('\n\n\n tmp_put_path + tmp_filename in glob.glob(tmp_put_path + *) --- \n\n\n')
-                    tmp_file = open(time_ref_filename,"w") # used as time reference for the file creation date in current OS (see os.path.getctime))
-                    time_difference = os.path.getctime(time_ref_filename) - max([os.path.getctime(f) for f in tmp_files_in_put_path]) # seconds 
-                    #print( 'time difference =',time_difference )
-                    if time_difference > 60*60 : # if time difference is > 1hr then we re-download the data 
-                        print('\n\n\n last download of daily file was ',time_difference/60,' minutes ago, therefore downloading an updated file\n\n\n')
-                        os.remove(tmp_put_path+tmp_filename) # deleete the old file first 
-                        subprocess.check_call(['./get_latest_data.sh', tmp_get_path+tmp_filename, tmp_put_path])  
-                        print (['./get_latest_data.sh', tmp_get_path + tmp_filename, tmp_put_path])  
+    #                 print('\n\n\n tmp_put_path + tmp_filename in glob.glob(tmp_put_path + *) --- \n\n\n')
+    #                 tmp_file = open(time_ref_filename,"w") # used as time reference for the file creation date in current OS (see os.path.getctime))
+    #                 time_difference = os.path.getctime(time_ref_filename) - max([os.path.getctime(f) for f in tmp_files_in_put_path]) # seconds 
+    #                 #print( 'time difference =',time_difference )
+    #                 if time_difference > 60*60 : # if time difference is > 1hr then we re-download the data 
+    #                     print('\n\n\n last download of daily file was ',time_difference/60,' minutes ago, therefore downloading an updated file\n\n\n')
+    #                     os.remove(tmp_put_path+tmp_filename) # deleete the old file first 
+    #                     subprocess.check_call(['./get_latest_data.sh', tmp_get_path+tmp_filename, tmp_put_path])  
+    #                     print (['./get_latest_data.sh', tmp_get_path + tmp_filename, tmp_put_path])  
                         
-                    else:
-                        print(f'we will read the current file we have: {tmp_get_path + tmp_filename}')
-                    tmp_file.close() # close the temporal reference file
+    #                 else:
+    #                     print(f'we will read the current file we have: {tmp_get_path + tmp_filename}')
+    #                 tmp_file.close() # close the temporal reference file
 
-            else: # no files in tmp_put_path, so we download it 
-                print('\n\n\n NO files in tmp_files_in_put_path \n\n\n')
-                subprocess.check_call(['./get_latest_data.sh', tmp_get_path+tmp_filename, tmp_put_path])  
-                print (['./get_latest_data.sh', tmp_get_path + tmp_filename, tmp_put_path]) 
+    #         else: # no files in tmp_put_path, so we download it 
+    #             print('\n\n\n NO files in tmp_files_in_put_path \n\n\n')
+    #             subprocess.check_call(['./get_latest_data.sh', tmp_get_path+tmp_filename, tmp_put_path])  
+    #             print (['./get_latest_data.sh', tmp_get_path + tmp_filename, tmp_put_path]) 
                 
             
-        else: # we should NEVER get this case 
-            raise TypeError(f'PATH:{local_data_path}/raw/{year}/{month} does not match existence cases.. how?' )
+    #     else: # we should NEVER get this case 
+    #         raise TypeError(f'PATH:{local_data_path}/raw/{year}/{month} does not match existence cases.. how?' )
         
         
         
         
         # now read into our dictionaries  
-        latest_files[ut] = tmp_put_path + tmp_filename 
+        test_data_file = PROJECT_DIR / "test_data" / "ldlvib1_raw_2023-01-13.hdf5"
+        latest_files[ut] = str(test_data_file)
         latest_data[ut] = h5py.File(latest_files[ut], 'r') #{t:{frozenset(h5[t][s][:]) for s in h5[t]} for t in h5} # this is to make latest data hashable so it can be caches (cant cache h5py files)!!!  
-        
+
+        # 4-12-25 , static time key 
+                
         # need time_key to be one that is closest to now (not necessarily the most recent, in case we want to look back in time!) 
         current_date_tmp = now.strftime("%Y-%m-%d")
 
         current_time_key = np.array(list( latest_data[ut].keys() ) )[ np.argmin([abs(now - datetime.datetime.strptime(current_date_tmp +'T' + t, '%Y-%m-%dT%H:%M:%S') ) for t in latest_data[ut].keys() ]) ]
-        
+
+        # # Tmp static edit: 
+        # import re
+
+        # # Get a list of HDF5 top-level keys
+        # all_keys = list(latest_data[ut].keys())
+
+        # # Keep only those that look like HH:MM:SS
+        # time_keys = [k for k in all_keys if re.match(r"^\d{2}:\d{2}:\d{2}$", k)]
+
+        # if not time_keys:
+        #     raise RuntimeError(
+        #         f"No time-like keys found in HDF5 file for UT{ut}. "
+        #         f"Top-level keys: {all_keys}"
+        #     )
+
+        # # For now: just pick the first one (sorted for consistency)
+        # time_keys = sorted(time_keys)
+        # current_time_key = time_keys[0]
+
         acc_dict[ut] = mn2.process_single_mn2_sample(latest_data[ut], current_time_key, \
                                                       post_upgrade=post_upgrade, user_defined_geometry=None, outlier_thresh = 9, replace_value=0, ensure_1ms_sampling=False)
 
@@ -144,8 +214,9 @@ def prepare_current_status(now, post_upgrade):
 
     # telescope states                                                                                                                   
     tel_state_dict = {}
+    
     for ut in [1,2,3,4]:
-        tel_state_dict[ut]=mn2.get_state(now, ut)
+        tel_state_dict[ut]= STATIC_TEL_STATE[ut] #mn2.get_state(now, ut)
 
     # process and cache PSDs from current data                                                                                           
     current_psd_dict = prepare_psd_data(acc_dict)
@@ -192,7 +263,7 @@ def get_reference_psds(psd_dict, tel_state_dict):
         
             print(f'\n\nBEGIN searching for reference psd file for {s} on UT{ut}')
         
-            tmp_reference_psd_file, no_ref_file_flag = mn2.get_psd_reference_file(local_reference_psd_path, ut, s, tel_state_dict)
+            tmp_reference_psd_file, no_ref_file_flag = mn2.get_psd_reference_file(str(local_reference_psd_path) + "/", ut, s, tel_state_dict)#mn2.get_psd_reference_file(local_reference_psd_path, ut, s, tel_state_dict)
             #tmp_reference_psd_file = mn2.get_psd_reference_file(local_reference_psd_path, ut, state_name, focus_name, sensor_name)                                                                                                                           
             #####                                                                                                                                                                                                                                            
             #THE REFERENCE PSD (quantiles, moments etc). Used for classification                                                                                                                                                                             
@@ -212,7 +283,7 @@ def get_reference_psds(psd_dict, tel_state_dict):
                 tmp_tel_state_dict[ut]['Nasmyth B']=0
                 tmp_tel_state_dict[ut]['Cassegrain']=0
                 # now try again        
-                tmp_reference_psd_file, no_ref_file_flag = mn2.get_psd_reference_file(local_reference_psd_path, ut, s, tmp_tel_state_dict)
+                tmp_reference_psd_file, no_ref_file_flag = mn2.get_psd_reference_file(str(local_reference_psd_path) + "/", ut, s, tmp_tel_state_dict) #mn2.get_psd_reference_file(local_reference_psd_path, ut, s, tmp_tel_state_dict)
                 # read in again        
                 if not  no_ref_file_flag:
                     ref_psd_features = pd.read_csv( tmp_reference_psd_file[0] ,index_col=0)
@@ -355,14 +426,25 @@ if (now.hour==0) & (now.minute<15):
     now = now - datetime.timedelta(minutes = 25)
 ####     
 
-#paths 
-datalab_reports_url = 'http://reports.datalab.pl.eso.org/data/manhattan'
-local_data_path = '/home/bcourtne/mn2_dashboard/local_data_path/reports.datalab.pl.eso.org/data/manhattan/'
-local_figure_path =  '/home/bcourtne/mn2_dashboard/jupyter_playground/figures'
-local_vibdetection_path = '/home/bcourtne/mn2_dashboard/jupyter_playground/detected_vibration_tables'
-local_reference_psd_path = '/home/bcourtne/mn2_dashboard/local_data_path/reference_psds/' # path to reference psds used in some classification methods 
+# 12-4-25. edit - these are all for online analysis 
+# #paths 
+# datalab_reports_url = 'http://reports.datalab.pl.eso.org/data/manhattan'
+# local_data_path = '/home/bcourtne/mn2_dashboard/local_data_path/reports.datalab.pl.eso.org/data/manhattan/'
+# local_figure_path =  '/home/bcourtne/mn2_dashboard/jupyter_playground/figures'
+# local_vibdetection_path = '/home/bcourtne/mn2_dashboard/jupyter_playground/detected_vibration_tables'
+# local_reference_psd_path = '/home/bcourtne/mn2_dashboard/local_data_path/reference_psds/' # path to reference psds used in some classification methods 
 
-#clssification classes  
+# 
+local_reference_psd_path = PROJECT_DIR / "reference_psds/"
+
+local_figure_path = PROJECT_DIR / "figures" 
+local_figure_path.mkdir(parents=True, exist_ok=True)
+
+local_vibdetection_path = PROJECT_DIR / "output" 
+local_vibdetection_path.mkdir(parents=True, exist_ok=True)
+
+
+
 #psd_classification_categories = ['improved','normal','degraded','dangerous'] # classes for psd classification per frequency bin (red fl
 #class should always be last! otherwiseredflag detections will be off
 #psd_classification_colors = ['green','silver','orange','red'] # colors to go with classification  
@@ -422,7 +504,7 @@ mn2_status_df, status_justification_df = get_status_from_report_card( report_car
 st.header('PARANAL VIBRATION DASHBOARD')
 
 
-tabs = st.tabs(["current status","analyse data", "vibration source inventory"])
+tabs = st.tabs(["analyse data", "vibration source inventory"])
 
 
 with tabs[0]:
@@ -439,7 +521,7 @@ with tabs[0]:
     tel_state_df.columns = ['UT1','UT2','UT3','UT4']
     
     # mn2 diagram 
-    mn2_diagram = Image.open(f'{local_figure_path}/MNII_system.jpg')
+    mn2_diagram = Image.open(f'{local_figure_path}/MNII_system.jpeg')
 
     def color_mn2_status_df(val):
         color = 'red' if val == 'NOK' else 'green'
@@ -705,106 +787,9 @@ with tabs[0]:
 
 
 
-
 with tabs[1]:
-
-    # We should copy what Vicente did here : http://datalab.pl.eso.org:8866/voila/render/datalake/apps/sao_perfmon/Vibrations.ipynb
-    
-
-    #st.header("A dog")
-    #st.image("https://static.streamlit.io/examples/dog.jpg", width=200)
-    date2look = st.date_input("What date do you want to analyse?" ,datetime.date(2023, 1, 6))
-
-    # we specify the year and month specifically to feed to a cached function 
-    year2look = date2look.year
-    month2look = date2look.month
-
-    #time2look = st.time_input('at what UT time do you want to analyse (we will look for the nearest sample)?', datetime.time(8, 45))
-
-    which_UT = st.selectbox('what unit telescope (UT) do you want to look at?', ('UT1', 'UT2','UT3','UT4'))
-
-
-    if post_upgrade:
-        which_sensor =  st.selectbox('what sensor or combined geometry do you want to look at?', tuple(['m1-3','m4-7','m1-7'] + [f'm{i}' for i in range(1,8)] + [f'sensor {i+1} ({m})' for i, m in enumerate(mirror_lab )]) )
-    else: # pre upgrade 
-        which_sensor =  st.selectbox('what sensor or combined geometry do you want to look at?', tuple(['m1-3'] + [f'm{i}' for i in range(1,4)] + [f'sensor {i+1} ({m})' for i, m in enumerate(mirror_lab[:7])]))
-
-    if 'sensor' in which_sensor: # we change the variable name to make compatiple with file naming convention 
-        sensor2look = f'{which_sensor.split()[0]}_{which_sensor.split()[1]}'
-    else:
-        sensor2look = which_sensor
-
-    plot_what = st.selectbox('what should we plot', ('position PSD', 'acceleration PSD'))
-
-    @st.cache_data
-    def read_usr_defined_data_for_analysis(year2look,month2look, which_UT, sensor2look ): 
-        data2look_tmp = pd.read_csv(f'{local_data_path}/bcb/{year2look}/{"%02d" % (month2look,)}/{which_UT}/{sensor2look}_psds_{which_UT}_{year2look}-{"%02d" % (month2look,)}.csv',index_col=[0])
-        return(data2look_tmp)
-    
-    data2look = read_usr_defined_data_for_analysis(year2look, month2look,  which_UT, sensor2look )
-
-    available_days_in_data = list( np.unique( [ float(d_tmp.split('-')[2].split()[0])  for d_tmp in data2look.index]) ) 
-    day_max, day_min = int(max( available_days_in_data )), int( min( available_days_in_data ) )
-    #available_days_in_data = np.array([ datetime.datetime.strptime(d_tmp, '%Y-%m-%d %H:%M:%S').day for d_tmp in data2look.index])  
-    
-    # time and day sliders 
-    print( available_days_in_data )
-    day2look = st.slider("Change what day to look at?", min_value = day_min, max_value=day_max, value=date2look.day )
-    time2look = st.slider("Change what time to look at?", value=datetime.time(11, 30))
-    
-    usr_time  =  datetime.datetime.strptime(f'{year2look}-{"%02d" % (month2look,)}-{"%02d" % (day2look,)} {time2look.hour}:{time2look.minute}:00', '%Y-%m-%d %H:%M:%S')
-    #usr_time = datetime.datetime.combine( date2look, time2look ) # merge the date and time 
-
-
-    # get the date index nearest to input time                                                                           
-    data_key = data2look.index[np.argmin([abs(usr_time - datetime.datetime.strptime(data2look.index[i], '%Y-%m-%d %H:%M:%S') ) for i in range(len(data2look)) ]) ]
-
-    #st.header(f'{time2look}, {usr_time}, {data_key}, {data2look.index[2]},{data2look.index[10]}')
-    # plot 
-    fig3,ax3 = plt.subplots()
-    f = np.array(list(data2look.loc[data_key].index.astype(float)))
-    psd = data2look.loc[data_key].values
-
-    if plot_what=='position PSD':
-        f,psd = mn2.double_integrate(f,psd)
-        if 'sensor' in sensor2look:
-            ax3.loglog(f,psd,label=f'{data_key}')
-            #ax3.loglog(f, np.cumsum( psd[::-1])[::-1] * np.diff(f)[1], label=f'{date_key}', color='grey', linestyle=':')
-            ax3.set_ylabel(r'PSD [$V^2/Hz$]',fontsize=15)
-            
-        else:
-            ax3.loglog(f,1e12 * psd,label=f'{data_key}')
-            #ax3.loglog(f, np.cumsum(1e12 * psd[::-1])[::-1] * np.diff(f)[1], label=f'{date_key}', color='grey', linestyle=':')
-            ax3.set_ylabel(r'PSD [$\mu m^2/Hz$]',fontsize=15)
-
-    elif plot_what=='acceleration PSD':
-        if 'sensor' in sensor2look:
-            ax3.loglog(f,psd,label=f'{data_key}')
-            #ax3.loglog(f, np.cumsum( psd[::-1])[::-1] * np.diff(f)[1], label=f'{date_key}', color='grey', linestyle=':')
-            ax3.set_ylabel(r'PSD [$V^2/s^4/Hz$]',fontsize=15)
-            
-        else:
-            ax3.loglog(f, 1e12 * psd,label=f'{data_key}')
-            #ax3.loglog(f, np.cumsum(1e12 * psd[::-1])[::-1] * np.diff(f)[1], label=f'{date_key}', color='grey', linestyle=':')
-            ax3.set_ylabel(r'PSD [$\mu m^2/s^4/Hz$]',fontsize=15)
-    else:
-        print('case not made')
-
-    ax3.set_xlabel(r'frequency [Hz]',fontsize=15)
-    ax3.legend( fontsize=15)
-    ax3.tick_params(labelsize=15)
-    ax3.grid()
-    st.pyplot(fig3)
-
-
-
-
-
-
-
-with tabs[2]:
    
-    
+    st.write("TO BE UPDATED:")
     vib_inventory_UT1_dict = {'frequency (Hz)':[47,200,73 ],\
                           'origin':['fans','MACAO',''],\
                               'related PR':['-','-','https://wits.pl.eso.org/browse/PR-173294']}  
